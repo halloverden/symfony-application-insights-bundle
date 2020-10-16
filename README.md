@@ -1,0 +1,1 @@
+# symfony-application-insights-bundle
