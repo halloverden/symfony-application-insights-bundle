@@ -1,0 +1,47 @@
+parameters:
+  tracker.exceptions_enabled: '%env(EXCEPTION_TRACKING_ENABLED)%'
+  env(EXCEPTION_TRACKING_ENABLED): 'true'
+  tracker.exceptions_ignored: '%env(json:EXCEPTION_TRACKING_EXCLUDED)%'
+  env(EXCEPTION_TRACKING_EXCLUDED): '[]'
+  instrumentation_key: '%env(MICROSOFT_APP_INSIGHTS_INTRUMENTATION_KEY)%'
+  env(MICROSOFT_APP_INSIGHTS_INTRUMENTATION_KEY): ''
+
+services:
+  'tracker_exception_config':
+     class: HalloVerden\ApplicationInsightsBundle\Tracker\Configuration\ExceptionConfiguration
+     arguments:
+       $enabled:           '%tracker.exceptions_enabled%'
+       $ignoredExceptions: '%tracker.exceptions_ignored%'
+
+  'tracker_config':
+    class: HalloVerden\ApplicationInsightsBundle\Tracker\Configuration
+    arguments:
+      $key: '%instrumentation_key%'
+      $exception: '@tracker_exception_config'
+
+  HalloVerden\ApplicationInsightsBundle\EventSubscriber\ExceptionSubscriber:
+    tags: [ { name: kernel.event_subscriber } ]
+    arguments:
+      $tracker: '@HalloVerden\ApplicationInsightsBundle\Interfaces\TelemetryTrackerInterface'
+
+  HalloVerden\ApplicationInsightsBundle\EventSubscriber\KernelTerminateSubscriber:
+    tags: [ { name: kernel.event_subscriber } ]
+    arguments:
+      $tracker: '@HalloVerden\ApplicationInsightsBundle\Interfaces\TelemetryTrackerInterface'
+
+  ApplicationInsights\Telemetry_Client:
+    class: ApplicationInsights\Telemetry_Client
+
+  HalloVerden\ApplicationInsightsBundle\Tracker\FailureCache:
+    class: HalloVerden\ApplicationInsightsBundle\Tracker\FailureCache
+    arguments:
+      $cache: '@Symfony\Contracts\Cache\CacheInterface'
+
+
+  HalloVerden\ApplicationInsightsBundle\Interfaces\TelemetryTrackerInterface:
+    class: HalloVerden\ApplicationInsightsBundle\Tracker\TelemetryTracker
+    arguments:
+      $client:        '@ApplicationInsights\Telemetry_Client'
+      $cache:         '@HalloVerden\ApplicationInsightsBundle\Tracker\FailureCache'
+      $logger:        '@Psr\Log\LoggerInterface'
+      $configuration: '@tracker_config'
