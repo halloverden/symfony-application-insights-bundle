@@ -22,13 +22,10 @@ class KernelTerminateSubscriber implements EventSubscriberInterface {
 
 
   public function onKernelTerminate() {
-    if (!$this->tracker->getContext()->getInstrumentationKey()) {
-      // instrumentation key is empty
-      return;
-    }
-
-    if (!count($this->tracker->getChannel()->getQueue())) {
-      // telemetry client queue is empty
+    if ( !$this->tracker->isEnabled() ||
+         !$this->tracker->getContext()->getInstrumentationKey() ||
+         !count($this->tracker->getChannel()->getQueue())
+    ) {
       return;
     }
 

@@ -9,6 +9,11 @@ use HalloVerden\ApplicationInsightsBundle\Tracker\Configuration\ExceptionConfigu
 class Configuration {
 
   /**
+   * @var bool
+   */
+  private $enabled;
+
+  /**
    * @var string
    */
   private $key;
@@ -16,11 +21,19 @@ class Configuration {
   /**
    * @var ExceptionConfiguration
    */
-  private $exception;
+  private $exceptionConfiguration;
 
-  public function __construct(string $key, ExceptionConfiguration $exception) {
-    $this->exception = $exception;
+  public function __construct(bool $enabled, string $key, ExceptionConfiguration $exceptionConfiguration) {
+    $this->enabled = $enabled;
     $this->key = $key;
+    $this->exceptionConfiguration = $exceptionConfiguration;
+  }
+
+  /**
+   * @return bool
+   */
+  public function isEnabled(): bool {
+    return $this->enabled;
   }
 
   /**
@@ -33,8 +46,8 @@ class Configuration {
   /**
    * @return ExceptionConfiguration
    */
-  public function getException(): ExceptionConfiguration {
-    return $this->exception;
+  public function getExceptionConfiguration(): ExceptionConfiguration {
+    return $this->exceptionConfiguration;
   }
 
 }

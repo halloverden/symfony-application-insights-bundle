@@ -27,9 +27,8 @@
         "symfony/dependency-injection": "^4.4.7|^5.0.7",
         "symfony/config": "^4.4.7|^5.0.7",
         "symfony/routing": "^4.4.7|^5.0.7",
-        "halloverden/application-insights-sdk": "@dev",
-        "ext-json": "*",
-        "symfony/cache": "^5.0"
+        "halloverden/aai-sdk": "@dev",
+        "ext-json": "*"
     },
     "autoload": {
         "psr-4": {
@@ -39,7 +38,7 @@
     "repositories": [
         {
             "type": "path",
-            "url": "../halloverden/application-insights-sdk",
+            "url": "../aai-sdk",
             "options": {
                 "symlink": true
             }

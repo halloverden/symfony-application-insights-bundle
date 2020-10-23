@@ -29,16 +29,11 @@ class ExceptionSubscriber implements EventSubscriberInterface {
    * @param ExceptionEvent $event
    */
   public function onKernelException(ExceptionEvent $event) {
-    // instrumentation key is empty
-    if (!$this->tracker->getContext()->getInstrumentationKey()) {
-      return;
-    }
-
-    if (!$this->tracker->isExceptionEnabled()) {
-      return;
-    }
-
-    if ($this->exceptionLogged) {
+    if ( !$this->tracker->isEnabled() ||
+         !$this->tracker->getContext()->getInstrumentationKey() ||
+         !$this->tracker->isExceptionEnabled() ||
+          $this->exceptionLogged
+    ) {
       return;
     }
 

@@ -12,6 +12,8 @@ interface TelemetryTrackerInterface {
 
   public function trackException(\Throwable $getThrowable);
 
+  public function isEnabled();
+
   public function isExceptionEnabled();
 
   public function flush();

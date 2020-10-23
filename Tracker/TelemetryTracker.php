@@ -4,27 +4,22 @@
 namespace HalloVerden\ApplicationInsightsBundle\Tracker;
 
 
-use ApplicationInsights\Channel\Telemetry_Channel;
-use ApplicationInsights\Telemetry_Client;
-use ApplicationInsights\Telemetry_Context;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise\PromiseInterface;
+use HalloVerden\ApplicationInsights\Channel\TelemetryChannel;
+use HalloVerden\ApplicationInsights\TelemetryClient;
+use HalloVerden\ApplicationInsights\TelemetryContext;
 use HalloVerden\ApplicationInsightsBundle\Interfaces\TelemetryTrackerInterface;
-use Psr\Cache\InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 class TelemetryTracker implements TelemetryTrackerInterface {
 
   /**
-   * @var Telemetry_Client
+   * @var TelemetryClient
    */
   private $client;
-
-  /**
-   * @var FailureCache
-   */
-  private $cache;
 
   /**
    * @var LoggerInterface
@@ -38,15 +33,13 @@ class TelemetryTracker implements TelemetryTrackerInterface {
 
   /**
    * TelemetryTracker constructor.
-   * @param Telemetry_Client $client
-   * @param FailureCache $cache
+   * @param TelemetryClient $client
    * @param LoggerInterface $logger
    * @param Configuration $configuration
    */
-  public function __construct(Telemetry_Client $client, FailureCache $cache, LoggerInterface $logger, Configuration $configuration) {
+  public function __construct(TelemetryClient $client, LoggerInterface $logger, Configuration $configuration) {
     $client->getContext()->setInstrumentationKey($configuration->getKey());
     $this->client = $client;
-    $this->cache = $cache;
     $this->logger = $logger;
     $this->configuration = $configuration;
   }
@@ -54,31 +47,38 @@ class TelemetryTracker implements TelemetryTrackerInterface {
   /**
    * @return bool
    */
-  public function isExceptionEnabled() {
-    return $this->configuration->getException()->isEnabled();
+  public function isEnabled() {
+    return $this->configuration->isEnabled();
   }
 
   /**
-   * @return Telemetry_Context
+   * @return bool
+   */
+  public function isExceptionEnabled() {
+    return $this->configuration->getExceptionConfiguration()->isEnabled();
+  }
+
+  /**
+   * @return TelemetryContext
    */
   public function getContext() {
     return $this->client->getContext();
   }
 
   /**
-   * @return Telemetry_Channel
+   * @return TelemetryChannel
    */
   public function getChannel() {
     return $this->client->getChannel();
   }
 
   /**
-   * @param \Throwable $exception
+   * @param Throwable $exception
    * @param array|null $properties
    * @param array|null $measurements
    */
-  public function trackException(\Throwable $exception, array $properties = NULL, array $measurements = NULL) {
-    if (!$this->isExceptionEnabled() || $this->configuration->getException()->isIgnored(\get_class($exception))) {
+  public function trackException(Throwable $exception, array $properties = NULL, array $measurements = NULL) {
+    if (!$this->isExceptionEnabled() || $this->configuration->getExceptionConfiguration()->isIgnored(get_class($exception))) {
       return;
     }
 
@@ -88,7 +88,6 @@ class TelemetryTracker implements TelemetryTrackerInterface {
 
   /**
    * @return PromiseInterface|ResponseInterface|null
-   * @throws InvalidArgumentException
    */
   public function flush() {
     if (!$this->isExceptionEnabled()) {
@@ -97,50 +96,15 @@ class TelemetryTracker implements TelemetryTrackerInterface {
 
     try {
       $response = $this->client->flush();
-    } catch (\Throwable $e) {
-      $this->cache->add(...$this->client->getChannel()->getQueue());
+    } catch (Throwable $e) {
       $this->logger->error(
         sprintf('Exception occurred while flushing App Insights Telemetry Client: %s', $e->getMessage()),
-        \json_decode($this->client->getChannel()->getSerializedQueue(), true)
+        json_decode($this->client->getChannel()->getSerializedQueue(), true)
       );
 
       return $e instanceof RequestException ? $e->getResponse() : null;
     }
-
-    try {
-      if ($this->cache->empty()) {
-        return $response;
-      }
-
-      $failures = [];
-      foreach ($this->cache->all() as $item) {
-        try {
-          (new SendOne)($this->client, $item);
-        } catch (\Throwable $e) {
-          $this->logger->error(
-            sprintf('Exception occurred while flushing App Insights Telemetry Client: %s', $e->getMessage()),
-            [
-              'item' => \json_encode($item),
-              'exception' => $e
-            ]
-          );
-
-          $failures[] = $item;
-        }
-      }
-
-      $this->cache->purge();
-
-      if (\count($failures) > 0) {
-        $this->cache->add(...$failures);
-      }
-    } catch (\Throwable $e) {
-      $this->logger->error(
-        sprintf('Exception occurred while flushing App Insights Failure Cache: %s', $e->getMessage()),
-        ['exception' => $e]
-      );
-    }
-    return null;
+    return $response;
   }
 
 }
