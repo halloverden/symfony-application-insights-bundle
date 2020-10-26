@@ -1,5 +1,13 @@
 <?php
 
+/*
+ * This file is inspired by the app-insights-php/client package.
+ *
+ * (c) 2019 App Insights PHP
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace HalloVerden\ApplicationInsightsBundle\Tracker;
 

@@ -197,16 +197,16 @@
         },
         {
             "name": "halloverden/azure-application-insights",
-            "version": "0.1.0",
+            "version": "0.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/halloverden/azure-application-insights.git",
-                "reference": "dd7f7f13e2455afffa13380b1faad1a6b79cf5b9"
+                "reference": "e917d5e6a4eb32e11997dc474e9fce0d3ac0c8c6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/halloverden/azure-application-insights/zipball/dd7f7f13e2455afffa13380b1faad1a6b79cf5b9",
-                "reference": "dd7f7f13e2455afffa13380b1faad1a6b79cf5b9",
+                "url": "https://api.github.com/repos/halloverden/azure-application-insights/zipball/e917d5e6a4eb32e11997dc474e9fce0d3ac0c8c6",
+                "reference": "e917d5e6a4eb32e11997dc474e9fce0d3ac0c8c6",
                 "shasum": ""
             },
             "require": {
@@ -237,7 +237,7 @@
                 "monitoring",
                 "telemetry"
             ],
-            "time": "2020-10-23T15:00:26+00:00"
+            "time": "2020-10-26T13:37:34+00:00"
         },
         {
             "name": "psr/container",
