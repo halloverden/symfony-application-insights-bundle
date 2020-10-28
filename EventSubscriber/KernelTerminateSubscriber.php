@@ -41,8 +41,8 @@ class KernelTerminateSubscriber implements EventSubscriberInterface {
   }
 
   public static function getSubscribedEvents() {
-    return [
-      KernelEvents::TERMINATE => 'onKernelTerminate'
-    ];
+    return array(
+      KernelEvents::TERMINATE => [ 'onKernelTerminate', -255 ]
+    );
   }
 }
